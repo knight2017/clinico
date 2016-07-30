@@ -1,0 +1,18 @@
+<div class="container">
+  <ul class="nav nav-tabs">
+    <li><a data-toggle="tab" href="#links">User</a></li>
+    <li><a data-toggle="tab" href="#projects">Doctor</a></li>
+  </ul>
+</div>
+
+<div class="container" >
+    <div class="tab-content">
+      <div id="links" class="tab-pane fade">
+        <%= render "users/form", user: @user %>
+      </div>
+      <div id="projects" class="tab-pane fade">
+        <%= render "doctors/form", doctor: @doctor %>
+      </div>
+    </div>
+  </div>
+</div>

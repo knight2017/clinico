@@ -1,0 +1,13 @@
+<div class="<%= dom_id(approval)%>">
+  <% if approval.aasm_state == 'submitted'  %>
+  <%= approval.user.first_name %>
+  <%= link_to "Approve", approval_patient_path(@doctor, approval),
+                          method: :patch,
+                          remote: true,
+                          data: {confirm: "Are you sure you want to approve this patient?"} %>
+  <%= link_to "Decline", decline_patient_path(@doctor, approval),
+                          method: :patch,
+                          remote: true%>
+  <hr>
+  <%end %>
+</div>

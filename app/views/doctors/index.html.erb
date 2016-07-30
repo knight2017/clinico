@@ -1,0 +1,9 @@
+<% @doctors.each do |doctor| %>
+  <div class="doctor col-sm-6 col-md-4 col-lg-3">
+    <h4><%= link_to doctor.full_name, display_path(doctor) %></h4>
+    <i class="author">information:<%= doctor.information %></i>
+    <p><%= doctor.location %></p>
+    <p>Type: <%= doctor.specializations.map {|s| s.title.capitalize }.join(", ") %></p>
+    <hr>
+  </div>
+<% end %>

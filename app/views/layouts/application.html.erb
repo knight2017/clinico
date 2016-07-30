@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clinico</title>
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <%= csrf_meta_tags %>
+</head>
+<body>
+
+  <nav class="navbar navbar-default">
+    <div class="container">
+      <ul class="nav navbar-nav">
+        <li><a class="item" href="/">HOME</a></li>
+      </ul>
+      <div class="">
+        <ul class="nav navbar-nav pull-right">
+          <% if !session[:user_id] && !session[:doctor_id] %>
+          <li><%= link_to "Sign up", new_session_path %></li>
+          <li><%= link_to "Sign In", "#loginModal", "data-toggle" => "modal"%></li>
+          <% elsif session[:user_id] && !session[:doctor_id] %>
+          <li><%#= link_to "Fave Posts", favourites_path %></li>
+          <li><%= link_to "#{current_user.first_name}", user_path(current_user) %> </li>
+          <li><%= link_to "sign out", sessions_path, method: :delete %></li>
+          <% elsif !session[:user_id] && session[:doctor_id] %>
+          <li><%#= link_to "Fave Posts", favourites_path %></li>
+          <li><%= link_to "#{current_doctor.first_name}", doctor_path(current_doctor) %> </li>
+          <li><%= link_to "sign out", sessions_path, method: :delete %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+   </nav>
+
+<div class="container">
+<%= yield %>
+</div>
+
+<%= render 'sessions/form'%>
+
+</body>
+</html>

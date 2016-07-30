@@ -1,0 +1,10 @@
+<h1>Hello <%= "#{@user.full_name}" %></h1>
+
+<%= simple_form_for @user do |f| %>
+  <%= f.input :first_name %>
+  <%= f.input :last_name %>
+  <%= f.input :email %>
+  <%= f.button :submit, class: "btn-primary" %>
+<% end %>
+<br>
+<%= link_to "Change Password", edit_user_path(@user) %>

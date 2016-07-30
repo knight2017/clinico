@@ -1,0 +1,21 @@
+<h4><%=@doctor.full_name %></h4>
+<i class="author">information:<%= @doctor.information %></i>
+<p><%= @doctor.location %></p>
+<p>Type: <%= @doctor.specializations.map {|s| s.title.capitalize }.join(", ") %></p>
+
+<p>
+  <% if user_signed_in? %>
+    <% if current_user.current_doctor_relation(@doctor)    == "submitted" %>
+      <h3>waiting to be approved by the doctor</h3>
+    <% elsif current_user.current_doctor_relation(@doctor) == "approved"  %>
+      <h3> <%= "you are a patient to  #{@doctor.full_name}" %></h3>
+    <% elsif current_user.current_doctor_relation(@doctor) == "declined"  %>
+      <h3>seems like you are not a patient</h3> 
+    <% else %>
+      Apply to be a patient
+      <div class="approval-form">
+        <%= render 'approvals/approvalform', doctor: @doctor, approval: @approval%>
+      </div>
+    <%end %>
+  <% end %>
+</p>

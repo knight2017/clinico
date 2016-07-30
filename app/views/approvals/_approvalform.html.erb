@@ -1,0 +1,6 @@
+
+
+<%= approval.errors.full_messages.join(", ") %> <br>
+<%= form_for [doctor, approval], remote: true do |f| %>
+<%= f.submit %>
+<% end %>

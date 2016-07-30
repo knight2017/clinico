@@ -1,0 +1,9 @@
+<%= simple_form_for @doctor, :url => doctor_path, :method => :patch do |f| %>
+  <%= f.input :first_name %>
+  <%= f.input :last_name %>
+  <%= f.input :email %>
+  <%= f.input :location %>
+    <%= f.input :information %>
+  <%= f.association :specializations, as: :check_boxes %>
+  <%= f.button :submit, class: "btn-primary" %>
+<% end %>

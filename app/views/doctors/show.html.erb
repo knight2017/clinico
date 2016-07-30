@@ -1,0 +1,18 @@
+<h1>Hello DR. <%= "#{@doctor.full_name}" %></h1>
+
+
+<h2>Pending Patient</h2>
+<div class='pendingpatient'>
+<% @doctor.approvals.each do |approval| %>
+ <%= render "/approvals/unapproved", approval: approval %>
+<% end %>
+</div>
+
+<br>
+
+
+
+
+<%= render 'doctors/editform' %>
+<br>
+<%= link_to "Change Password", edit_doctor_path(@doctor) %>
