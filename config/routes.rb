@@ -1,6 +1,5 @@
 Rails.application.routes.draw do
 
-  resources :appointments
   root "doctors#index"
   resources :sessions, only: [:new, :create] do
      delete :destroy, on: :collection
@@ -9,9 +8,12 @@ Rails.application.routes.draw do
   resources :doctors do
     resources :approvals, only: [:create, :destroy]
   end
-  resources :users
+  resources :users do
+    resources :appointments, only: [:create, :destroy]
+  end
   get  '/display/:id'  => 'doctors#display', as: :display
   post '/login/doctor' => 'sessions#create_doctor', as: :doctor_login
+  get 'users/:user_id/appointments/' => 'appointments#appointment_new', as: :appointment_new
 
   patch "/doctor/:doctor_id/approval/:id/approve" => 'approvals#approval_patient', as: :approval_patient
   patch "/doctor/:doctor_id/approval/:id/unapprove" => 'approvals#decline_patient',     as: :decline_patient

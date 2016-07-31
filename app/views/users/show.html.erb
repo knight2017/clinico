@@ -1,5 +1,7 @@
 <h1>Hello <%= "#{@user.full_name}" %></h1>
 
+<div id="calendar"></div>
+
 <%= simple_form_for @user do |f| %>
   <%= f.input :first_name %>
   <%= f.input :last_name %>

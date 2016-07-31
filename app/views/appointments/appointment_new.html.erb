@@ -1,0 +1,10 @@
+<div class="doctors">
+  <% @doctors.each do |doctor| %>
+    <div class="doctor">
+    <%= doctor.full_name %>
+    <span><%= "#{doctor.id}" %></span>
+    </div>
+  <% end %>
+</div>
+
+<div id="calendar"></div>

@@ -5,21 +5,30 @@ class Appointment < ActiveRecord::Base
 
   include AASM
   aasm whiny_transitions: false do
-    state :upcoming, initial: true
+    state :submitted, initial: true
+    state :confirmed
+    state :rejected
     state :canceled
     state :attended
     state :missed
 
+    event :confirm do
+      transitions from: :submitted, to: :confirmed
+    end
+    event :reject do
+      transitions from: :submitted, to: :rejected
+    end
+
     event :cancel do
-      transitions from: :upcoming, to: :canceled
+      transitions from: :confirmed, to: :canceled
     end
 
     event :attend do
-      transitions from: :submitted, to: :attended
+      transitions from: :confirmed, to: :attended
     end
 
     event :miss do
-      transitions from: :submitted, to: :missed
+      transitions from: :confirmed, to: :missed
     end
   end
 end
