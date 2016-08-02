@@ -12,6 +12,7 @@
  *
  *= require fullcalendar
  *= require sweet-alert
+ *= require font-awesome
  *= require_tree .
  *= require_self
  */
@@ -19,3 +20,19 @@
  #email, #password{
    width: 45%;
  }
+ .fc-content{
+     cursor: pointer;
+ }
+ .fa-trash {
+   bottom:0;
+   left: 5px;
+  }
+  .user {
+    background-color: lightgreen;
+  }
+  .doctor {
+    background-color: salmon;
+  }
+  #calendar {
+    border:1px;
+  }

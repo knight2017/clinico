@@ -1,0 +1,55 @@
+<h1>Hello <%= "#{@doctor.full_name}" %></h1>
+<div class="hiddenId" style="display:none;"><%= @doctor.id %></div>
+<div id="calendar"></div>
+
+
+<script>
+$(document).ready(function() {
+  var docId = $('.hiddenId').html();
+  $('#calendar').html("");
+  $('#calendar').fullCalendar({
+    header: {
+      left: 'today',
+      center: 'prev title next',
+      right: 'month,agendaWeek'
+    },
+    events: '/doctors/'+docId+'/availabilities.json',
+    dayClick: function(date, jsEvent, view) {
+
+      var startTime = date.format();
+      var appDate = moment(startTime).format('ddd MMM DD YYYY HH:mm');
+      var endTime = moment(startTime).add(1, 'hours').format('ddd MMM DD YYYY HH:mm');
+
+      swal({ title: "Add Avaliabilty?",
+             text: "You are adding "+appDate+" for booking!",
+             imageUrl: 'http://www.mariowiki.com/images/thumb/9/94/MushroomMarioKart8.png/603px-MushroomMarioKart8.png',
+             showCancelButton: true,
+             confirmButtonColor: "#DD6B55",
+             confirmButtonText: "Yes, Add!",
+             closeOnConfirm: false
+           },
+           function(){
+             $.ajax({
+                 method: "POST",
+                 url: '/doctors/'+docId+'/availabilities',
+                 data: {availability: {doctor_id: docId, start: startTime, end: endTime}},
+             }).done(function(){
+               swal("Avaliabilty added!", "", "success");
+             }).fail(function(){
+               swal({
+                 title: "Error!",
+                 imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+               text: "A error has occured, please try again later!"});
+             });
+          });
+    },
+    minTime: "07:00:00",
+    maxTime: "21:00:00",
+    allDaySlot: false,
+    defaultView :'agendaWeek',
+    height: 600,
+  });
+  $('.fc-widget-header').addClass('doctor');
+
+});
+</script>

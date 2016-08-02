@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
-gem 'sweet-alert'
+gem "font-awesome-rails"
+gem 'sweet-alert', :git => 'git://github.com/frank184/sweet-alert-rails'
 gem 'sweet-alert-confirm'
 gem 'fullcalendar-rails'
 gem 'momentjs-rails'

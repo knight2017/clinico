@@ -1,7 +1,7 @@
 class Appointment < ActiveRecord::Base
   belongs_to :user
   belongs_to :doctor
-
+  validates :start, uniqueness: { scope: [:user_id, :doctor_id] }
 
   include AASM
   aasm whiny_transitions: false do
@@ -18,7 +18,9 @@ class Appointment < ActiveRecord::Base
     event :reject do
       transitions from: :submitted, to: :rejected
     end
-
+    event :cancel_pre_conf do
+      transitions from: :submitted, to: :canceled
+    end
     event :cancel do
       transitions from: :confirmed, to: :canceled
     end

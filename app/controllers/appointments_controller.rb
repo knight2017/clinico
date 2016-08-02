@@ -6,15 +6,32 @@ class AppointmentsController < ApplicationController
     @appointment = Appointment.new
     @appointment.user = @user
   end
-  def appointment_create
-    @user = User.find params[:user_id]
+  def create
     @appointment = Appointment.new app_params
-    @appointment.user = @user
+    if @appointment.save
+      head :created
+    else
+      render :appointment_new
+    end
+  end
+  def cancel
+    can_params  = params.require(:appointment).permit(:id)
+    appointment = Appointment.find(can_params[:id])
+    if appointment.aasm_state == 'submitted'
+        appointment.cancel_pre_conf
+    elsif appointment.aasm_state == 'confirmed'
+       appointment.cancel
+    end
+    if appointment.save
+      head :ok
+    else
+      render :appointment_new
+    end
   end
 
 private
   def app_params
-   app_params = params.require(:appointment).permit(:doctor_id, :start_time, :end_time)
+   params.require(:appointment).permit(:user_id, :doctor_id, :start, :end)
   end
 
 

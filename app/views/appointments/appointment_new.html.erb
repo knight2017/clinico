@@ -1,10 +1,11 @@
+
 <div class="doctors">
   <% @doctors.each do |doctor| %>
     <div class="doctor">
-    <%= doctor.full_name %>
-    <span><%= "#{doctor.id}" %></span>
+    <span class="docname"><%= doctor.full_name %></span>
+    <span class="docid"><%= "#{doctor.id}" %></span>
     </div>
   <% end %>
+  <span class='user_id'><%= "#{@user.id}" %></span>
 </div>
-
-<div id="calendar"></div>
+<div id="user-booking-calendar"></div>
