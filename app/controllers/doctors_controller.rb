@@ -16,6 +16,14 @@ class DoctorsController < ApplicationController
   def edit
     @doctor = Doctor.find params[:id]
   end
+  def patients
+    doctor = Doctor.find(params[:id])
+    users = doctor.approved_users
+    respond_to do |format|
+       format.html { render }
+       format.json { render json: users}
+     end
+  end
 
   def update
     doctor_update = params.require(:doctor).permit(:first_name, :last_name, :email, :location, :information, {specialization_ids: []})
@@ -31,12 +39,26 @@ class DoctorsController < ApplicationController
     @doctor = Doctor.find params[:id]
     @approval = @doctor.approvals.new
   end
+
   def index
     @doctors = Doctor.all
+    defaultlocation = [49.2827, 123.1207]
+    @mapdoctors = Doctor.near("Vancouver, BC", 400, units: :km)
+    @abc = Gmaps4rails.build_markers(@mapdoctors) do |doctor, marker|
+      marker.lat        doctor.latitude
+      marker.lng        doctor.longitude
+      marker.infowindow doctor.first_name
+    end
   end
+
   def display
     @doctor = Doctor.find params[:id]
     @approval = @doctor.approvals.new
+    respond_to do |format|
+       format.html { render }
+       format.json { render json: @doctor}
+     end
+
   end
 
 

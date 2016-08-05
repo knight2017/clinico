@@ -1,5 +1,7 @@
 class Doctor < ActiveRecord::Base
   has_secure_password
+  geocoded_by :location
+  after_validation :geocode
   has_many :approvals, dependent: :destroy
   has_many :approved_users, through: :approvals, source: :user
   has_many :availabilities, dependent: :destroy

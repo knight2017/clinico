@@ -1,2 +1,8 @@
 @import "bootstrap-sprockets";
 @import "bootstrap";
+
+#calendar > div.fc-view-container > div > table {
+  border-style: solid;
+  border-color: #A9D5CF;
+  border-radius: 25px;
+}

@@ -20,7 +20,7 @@ class UsersController < ApplicationController
     appointments.each do |appointment|
       if appointment.aasm_state == 'canceled'
         temp = {
-          'id'   => appointment.id,
+         'id'   => appointment.id,
          "title" =>"Dr. " + Doctor.find(appointment.doctor_id).full_name,
          "start" => appointment.start,
          'end'   => appointment.end,
@@ -76,6 +76,35 @@ class UsersController < ApplicationController
      end
   end
 
+  def doctors
+    @doctors = []
+    user = User.find(params[:user_id])
+    doctors = user.doctors
+    doctorstype = ["Audiologist", "Allergist", "Anesthesiologist", "Cardiologist", "Endocrinologist"]
+    doctorstype.each do |spc|
+      temp =[]
+      doctors.each do |doc|
+        approval = Approval.find_by(doctor_id: doc.id, user_id: user.id)
+        if (approval.aasm_state == 'approved')
+          temp2 ={}
+          if (doc.specializations.find_by_title spc)
+            temp2 ={
+              'id' => doc.id,
+              'name' => doc.full_name
+              }
+            temp << temp2
+          end
+        end
+      end
+      hash = {spc => temp} if temp.length > 0
+      @doctors << hash     if !hash.blank?
+    end
+    @doctors.flatten!
+    respond_to do |format|
+       format.html { render }
+       format.json { render json: @doctors }
+     end
+  end
 
 
 end

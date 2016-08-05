@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160801232634) do
+ActiveRecord::Schema.define(version: 20160805003428) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -50,6 +50,7 @@ ActiveRecord::Schema.define(version: 20160801232634) do
     t.datetime "end"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string   "aasm_state"
   end
 
   add_index "availabilities", ["doctor_id"], name: "index_availabilities_on_doctor_id", using: :btree
@@ -76,6 +77,9 @@ ActiveRecord::Schema.define(version: 20160801232634) do
     t.string   "average_rating"
     t.datetime "created_at",      null: false
     t.datetime "updated_at",      null: false
+    t.string   "address"
+    t.float    "longitude"
+    t.float    "latitude"
   end
 
   add_index "doctors", ["first_name", "last_name"], name: "index_doctors_on_first_name_and_last_name", unique: true, using: :btree

@@ -27,12 +27,19 @@
    bottom:0;
    left: 5px;
   }
-  .user {
-    background-color: lightgreen;
-  }
-  .doctor {
-    background-color: salmon;
-  }
-  #calendar {
-    border:1px;
-  }
+.fa-ban {
+ bottom:0;
+ left: 5px;
+}
+.user {
+  background-color: lightgreen;
+}
+.doctor {
+  background-color: salmon;
+}
+#calendar {
+  border:1px;
+}
+.servive-block-dark-blue {
+    background: #4765a0;
+}

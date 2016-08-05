@@ -1,4 +1,7 @@
 source 'https://rubygems.org'
+gem 'underscore-rails'
+gem 'gmaps4rails'
+gem "geocoder"
 gem "font-awesome-rails"
 gem 'sweet-alert', :git => 'git://github.com/frank184/sweet-alert-rails'
 gem 'sweet-alert-confirm'

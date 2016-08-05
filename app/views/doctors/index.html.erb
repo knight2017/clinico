@@ -1,3 +1,10 @@
+
+<div>
+  <div id="map" style='width: 400px; height: 400px;'></div>
+</div>
+
+
+
 <% @doctors.each do |doctor| %>
   <div class="doctor col-sm-6 col-md-4 col-lg-3">
     <h4><%= link_to doctor.full_name, display_path(doctor) %></h4>
@@ -7,3 +14,15 @@
     <hr>
   </div>
 <% end %>
+
+
+
+<script type="text/javascript">
+handler = Gmaps.build('Google');
+handler.buildMap({ provider: {}, internal: {id: 'map'}}, function(){
+  markers = handler.addMarkers(<%= raw @abc.to_json %>);
+  handler.bounds.extendWith(markers);
+  handler.fitMapToBounds();
+  // handler.getMap().setZoom(15);
+});
+</script>

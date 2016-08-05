@@ -3,6 +3,33 @@
 <p><%= @doctor.location %></p>
 <p>Type: <%= @doctor.specializations.map {|s| s.title.capitalize }.join(", ") %></p>
 
+
+<div>
+  <div id="map" style='width: 400px; height: 400px;'></div>
+</div>
+
+
+<script type="text/javascript">
+  handler = Gmaps.build('Google');
+  handler.buildMap({ provider: {}, internal: {id: 'map'}}, function(){
+    markers = handler.addMarkers([
+      {
+        "lat": <%= @doctor.latitude %>,
+        "lng": <%= @doctor.longitude %>,
+        "infowindow": "<%= @doctor.full_name %>"
+      }
+    ]);
+    handler.bounds.extendWith(markers);
+    handler.fitMapToBounds();
+    handler.getMap().setZoom(15);
+  });
+</script>
+
+
+
+
+
+
 <p>
   <% if user_signed_in? %>
     <% if current_user.current_doctor_relation(@doctor)    == "submitted" %>
@@ -10,7 +37,7 @@
     <% elsif current_user.current_doctor_relation(@doctor) == "approved"  %>
       <h3> <%= "you are a patient to  #{@doctor.full_name}" %></h3>
     <% elsif current_user.current_doctor_relation(@doctor) == "declined"  %>
-      <h3>seems like you are not a patient</h3> 
+      <h3>seems like you are not a patient</h3>
     <% else %>
       Apply to be a patient
       <div class="approval-form">

@@ -1,5 +1,43 @@
 <h1>Hello DR. <%= "#{@doctor.full_name}" %></h1>
 
+<div class="hiddenId" style="display:none;"><%= @doctor.id %></div>
+
+
+<br>
+<div class="">
+  <button type="button" class="btn btn-success btnManageApp">Manage Your Appointment</button>
+  <button type="button" class="btn btn-success btnPatients">All Your Patients</button>
+  <button type="button" class="btn btn-success btnProfile">View Your Profile</button>
+</div>
+<br>
+<br>
+
+<div class="doctorOptions">
+  <div class="doctorPatients"></div>
+</div>
+<div id="calendar"></div>
+
+<div class="doctorProfile"></div>
+
+<script id="spec-patients-template" type="x-tmpl-mustache">
+<br>
+<div class='spec-patients servive-block servive-block-dark-blue col-md-4 col-sm-12' data-id="{{id}}" data-name="{{first_name}} {{last_name}}">
+   {{first_name}} {{last_name}}
+</div>
+<br>
+</script>
+
+<script id="doctor-profile-template" type="x-tmpl-mustache">
+<br>
+<div class='doctor-profile servive-block servive-block-dark-blue col-md-4 col-sm-12' data-id="{{id}}" data-name="{{first_name}} {{last_name}}">
+<h4><%='Dr. {{first_name}} {{last_name}}'%></h4>
+<i class="docinfo">information:<%= '{{information}}'%></i>
+<p><%= '{{location}}' %></p>
+<p>Type: <%= 'specializations' %></p>
+<button type="button" value='editprofile' class="btn-info btn">Edit Your Profile</button>
+</div>
+<br>
+</script>
 
 <h2>Pending Patient</h2>
 <div class='pendingpatient'>
@@ -10,9 +48,289 @@
 
 <br>
 
-
-
-
 <%= render 'doctors/editform' %>
 <br>
 <%= link_to "Change Password", edit_doctor_path(@doctor) %>
+
+<script>
+$(document).ready(function() {
+var docId = $('.hiddenId').html();
+
+$('.btnManageApp').click(function(){
+  $('#calendar').show();
+  $('.doctorOptions').hide();
+  $('.doctorProfile').hide();
+});
+
+$('.btnProfile').click(function(){
+  $('.doctorProfile').empty();
+  $('.doctorOptions').hide();
+  $('#calendar').hide();
+  $('.doctorProfile').show();
+  $.ajax({
+      method: "GET",
+      url: "/display/"+docId+".json",
+  }).done(function(data){
+    var template = $("#doctor-profile-template").html();
+    Mustache.parse(template);
+    var rendered = Mustache.render(template, data);
+    $(".doctorProfile").append(rendered);
+  }).fail(function(){
+    swal({
+      title: "Error!",
+      imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+    text: "A error has occured, please try again later!"});
+  });
+})
+
+$('.btnPatients').click(function(){
+  $('.doctorPatients').empty();
+  $('#calendar').hide();
+  $('.doctorProfile').hide();
+  $('.doctorPatients').show();
+  $.ajax({
+      method: "GET",
+      url: "/doctors/"+docId+"/patients.json",
+  }).done(function(data){
+    var template = $("#spec-patients-template").html();
+    Mustache.parse(template);
+      for(y in data){
+        var rendered = Mustache.render(template, data[y]);
+        $(".doctorPatients").append(rendered);
+    }
+  }).fail(function(){
+    swal({
+      title: "Error!",
+      imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+    text: "A error has occured, please try again later!"});
+  });
+})
+
+  $('#calendar').on('click', ".submitted", function(){
+     var id = $(this).find('.appId').data('id')
+     var userId = $(this).find('.userId').data('id')
+    swal({
+      title: "Confirm this Appointment",
+      text: "You can either confirme or decine this appointment request",
+      imageUrl: 'http://www.mariowiki.com/images/7/76/DrMarioOnlineRxMarioIcon.png',
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Confirme!",
+      cancelButtonText: "Decline!",
+      closeOnConfirm: false,
+      closeOnCancel: false },
+      function(isConfirm){
+        if (isConfirm) {
+          $.ajax({
+              method: "PATCH",
+              url: "/users/"+userId+"/appointments/"+id+"/confirm",
+              data: {appointment:{app_id: id}},
+          }).done(function(){
+              swal("Confirmed!", "This appointment has been aproved by you.", "success");
+          }).fail(function(){
+            swal({
+              title: "Error!",
+              imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+            text: "A error has occured, please try again later!"});
+          });
+        } else {
+          $.ajax({
+            method: "PATCH",
+            url: "/users/"+userId+"/appointments/"+id+"/reject",
+            data: {app_id: id},
+          }).done(function(){
+              swal("Declined!", "This appointment has been Declined by you.", "error");
+          }).fail(function(){
+            swal({
+              title: "Error!",
+              imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+            text: "A error has occured, please try again later!"});
+          });
+        }
+      });
+  })
+
+  $('#calendar').on('click', ".confirmed", function(){
+     var id = $(this).find('.appId').data('id')
+     var userId = $(this).find('.userId').data('id')
+    swal({
+      title: "Mark completion of the appointment",
+      text: "You mark this apppointment complete or missed by the patient",
+      imageUrl: 'http://www.mariowiki.com/images/7/76/DrMarioOnlineRxMarioIcon.png',
+      showCancelButton: true,
+      confirmButtonColor: "#A9D5CF",
+      cancelButtonColor: "#DD6B55",
+      confirmButtonText: "Completed!",
+      cancelButtonText: "Missed!",
+      closeOnConfirm: false,
+      closeOnCancel: false
+    },
+    function(isConfirm){
+      if (isConfirm) {
+        $.ajax({
+            method: "PATCH",
+            url: "/users/"+userId+"/appointments/"+id+"/attend",
+            data: {appointment:{app_id: id}},
+        }).done(function(){
+            swal("Marked Completed!", "This appointment has been marketed ar complete.", "success");
+        }).fail(function(){
+          swal({
+            title: "Error!",
+            imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+          text: "A error has occured, please try again later!"});
+        });
+      } else {
+        $.ajax({
+          method: "PATCH",
+          url: "/users/"+userId+"/appointments/"+id+"/miss",
+          data: {app_id: id},
+        }).done(function(){
+            swal("Missed!", "This appointment has been missed by the patient.", "error");
+        }).fail(function(){
+          swal({
+            title: "Error!",
+            imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+          text: "A error has occured, please try again later!"});
+        });
+      }
+    });
+  })
+
+  $('#calendar').on('click', ".open", function(){
+    var id = $(this).find('.appId').data('id')
+    swal({
+      title: "Do you want to close this time slot for appointment?",
+      imageUrl: 'http://www.mariowiki.com/images/7/76/DrMarioOnlineRxMarioIcon.png',
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Close !",
+      cancelButtonText: "Don't Close!",
+      closeOnConfirm: false,
+      closeOnCancel: false
+    },
+    function(isConfirm){
+      if (isConfirm) {
+        $.ajax({
+            method: "PATCH",
+            url: "/doctors/"+docId+"/availabilities/"+id+"/close",
+            data: {appointment:{app_id: id}},
+        }).done(function(){
+            swal("This time slot is closed!", "", "success");
+        }).fail(function(){
+          swal({
+            title: "Error!",
+            imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+          text: "A error has occured, please try again later!"});
+        });
+      } else {
+        swal({
+          imageUrl: 'http://vignette2.wikia.nocookie.net/nintendo/images/f/f4/Koopa_Icon.png/revision/latest?cb=20120820190332&path-prefix=en',
+          title: "Availability Unchanged",
+          text: "I will close in 2 seconds.",
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    });
+  })
+  $('#calendar').on('click', ".closed", function(){
+    var id = $(this).find('.appId').data('id')
+    swal({
+      title: "Mark this time slot availabel again?",
+      imageUrl: 'http://www.mariowiki.com/images/7/76/DrMarioOnlineRxMarioIcon.png',
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "YES!",
+      cancelButtonText: "NO!",
+      closeOnConfirm: false,
+      closeOnCancel: false
+    },
+    function(isConfirm){
+      if (isConfirm) {
+        $.ajax({
+            method: "PATCH",
+            url: "/doctors/"+docId+"/availabilities/"+id+"/reopen",
+            data: {appointment:{app_id: id}},
+        }).done(function(){
+            swal("This time slot is now open!", "", "success");
+        }).fail(function(){
+          swal({
+            title: "Error!",
+            imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+          text: "A error has occured, please try again later!"});
+        });
+      } else {
+        swal({
+          imageUrl: 'http://vignette2.wikia.nocookie.net/nintendo/images/f/f4/Koopa_Icon.png/revision/latest?cb=20120820190332&path-prefix=en',
+          title: "Availability Unchanged",
+          text: "I will close in 2 seconds.",
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    });
+  })
+
+
+
+
+
+
+
+
+
+
+
+  $('#calendar').fullCalendar({
+    header: {
+      left: 'today',
+      center: 'prev title next',
+      right: 'month,agendaWeek'
+    },
+    events: '/doctors/'+docId+'/availabilities.json',
+    eventRender: function(event, element) {
+      element.find(".fc-content").append('<i data-id="'+event.id+'" style="display:none;" class="appId"></i>');
+      element.find(".fc-content").append('<i data-id="'+event.user_id+'" style="display:none;" class="userId"></i>');
+      element.find(".fc-content").addClass(event.icon);
+      if (event.faicon) {
+        element.find(".fc-title").append("<i class='fa fa-"+event.faicon+"'></i>");
+      };
+    },
+    dayClick: function(date, jsEvent, view) {
+      var startTime = date.format();
+      var appDate = moment(startTime).format('ddd MMM DD YYYY HH:mm');
+      var endTime = moment(startTime).add(1, 'hours').format('ddd MMM DD YYYY HH:mm');
+
+      swal({ title: "Add Avaliabilty?",
+             text: "You are adding "+appDate+" for booking!",
+             imageUrl: 'http://www.mariowiki.com/images/thumb/9/94/MushroomMarioKart8.png/603px-MushroomMarioKart8.png',
+             showCancelButton: true,
+             confirmButtonColor: "#DD6B55",
+             confirmButtonText: "Yes, Add!",
+             closeOnConfirm: false
+           },
+           function(){
+             $.ajax({
+                 method: "POST",
+                 url: '/doctors/'+docId+'/availabilities',
+                 data: {availability: {doctor_id: docId, start: startTime, end: endTime}},
+             }).done(function(){
+               swal("Avaliabilty added!", "", "success");
+             }).fail(function(){
+               swal({
+                 title: "Error!",
+                 imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+               text: "A error has occured, please try again later!"});
+             });
+          });
+    },
+    minTime: "07:00:00",
+    maxTime: "21:00:00",
+    allDaySlot: false,
+    defaultView :'agendaWeek',
+    height: 600,
+  });
+  $('.fc-widget-header').addClass('doctor');
+
+});
+</script>

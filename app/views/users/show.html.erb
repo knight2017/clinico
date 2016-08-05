@@ -1,28 +1,200 @@
 <h1>Hello <%= "#{@user.full_name}" %></h1>
 <div class="hiddenId" style="display:none;"><%= @user.id %></div>
-<div id="calendar"></div>
-
-<%= simple_form_for @user do |f| %>
-  <%= f.input :first_name %>
-  <%= f.input :last_name %>
-  <%= f.input :email %>
-  <%= f.button :submit, class: "btn-primary" %>
-<% end %>
 <br>
-<%= link_to "Change Password", edit_user_path(@user) %>
+<div class="">
+  <button type="button" class="btn btn-success btnViewApp">View Your Appointment</button>
+  <button type="button" class="btn btn-success btnAddApp">Add Appointments</button>
+</div>
+<br>
+<br>
+<div class="viewApp">
+    <div id="calendar"></div>
+     <br>
+    <%= simple_form_for @user do |f| %>
+    <%= f.input :first_name %>
+    <%= f.input :last_name %>
+    <%= f.input :email %>
+    <%= f.button :submit, class: "btn-primary" %>
+    <% end %>
+    <br>
+    <%= link_to "Change Password", edit_user_path(@user) %>
+</div>
+
+<div class="addApp">
+  <div class="btns specializations"></div>
+  <div class="specialized-approved-doctors"></div>
+  <div class="selected-doctors"></div>
+</div>
+<br>
+<br>
+<div id="user-booking-calendar"></div>
+
+
+
+<script id="specializations-btn-template" type="x-tmpl-mustache">
+<br>
+<div class='specialization' data-id="{{id}}">
+  <button type="button" value='{{#.}}{{.}}{{/.}}' class="btn-info btn">{{#.}}{{.}}{{/.}}</button>
+</div>
+</script>
+
+<script id="spec-doctors-template" type="x-tmpl-mustache">
+<br>
+<div class='spec-doctors servive-block servive-block-dark-blue col-md-4 col-sm-12' data-id="{{id}}" data-name="{{name$}}">
+   Dr. {{name}}
+   <button type="button" class="btn-info btn addAppBtn">add appointment</button>
+</div>
+<br>
+</script>
+<script id="spec-doctor-detail-template" type="x-tmpl-mustache">
+<br>
+<div class='spec-doctor' data-id="{{id}}" data-name="{{first_name}} {{last_name}}">
+   <h3>Booking an Appointment with Dr. {{first_name}} {{last_name}}</h3>
+   <p>{{information}}</p>
+   <button type="button" class="btn-info btn moreDetailBtn">More Details</button>
+</div>
+<br>
+</script>
+
+
 
 <script>
 $(document).ready(function() {
+
   var events;
   var userId = $('.hiddenId').html()
+  var count = 0
+  var docData, docName;
+  $('#user-booking-calendar').hide()
+
+  $('.btnViewApp').on('click', function(){
+    $('.selected-doctors').empty()
+     $('.addApp').hide();
+     $('.viewApp').show();
+     $('#user-booking-calendar').hide()
+  });
+
+  $('.btnAddApp').on('click', function(){
+    $('.selected-doctors').empty()
+    $('.viewApp').hide();
+    $('.addApp').show();
+    $('#user-booking-calendar').hide()
+    if(count == 0){
+      $.ajax({
+          method: "GET",
+          url: '/users/'+userId+'/doctors.json',
+      }).done(function(data){
+        docData = data
+        count = 1
+        var keys = []
+        for(x in data) {
+        keys.push(Object.keys(data[x]));
+        }
+        var template = $("#specializations-btn-template").html();
+        Mustache.parse(template);
+        for(y in keys){
+          var rendered = Mustache.render(template, keys[y]);
+          $(".specializations").append(rendered);
+        }
+      }).fail(function(){
+        swal("failed!")
+      });
+    }
+
+  });
+
+$('.addApp').on('click', '.btn-info', function(){
+  var specialization =  $(this).val()
+  $('.specialized-approved-doctors').empty()
+  $('.selected-doctors').empty()
+  for (z in docData){
+    if (Object.keys(docData[z])[0] == specialization ) {
+      var a = z;
+     var template1 = $("#spec-doctors-template").html();
+     Mustache.parse(template1);
+     for(k in docData[a][specialization]){
+         var rendered = Mustache.render(template1, docData[a][specialization][k]);
+         $(".specialized-approved-doctors").append(rendered);
+     }
+    }
+  }
+})
+
+$('.addApp').on('click', '.addAppBtn', function(){
+  docId = $(this).parent().data('id')
+
+  $.ajax({
+      method: "GET",
+      url: "/display/"+docId+'.json',
+  }).done(function(data){
+    var template2 = $("#spec-doctor-detail-template").html();
+    Mustache.parse(template2);
+    var rendered = Mustache.render(template2, data);
+    $(".selected-doctors").append(rendered);
+
+  }).fail(function(){
+    swal({
+      title: "Error!",
+      imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+    text: "A error has occured, please try again later!"});
+  });
+
+  $('#user-booking-calendar').fullCalendar( 'destroy' )
+  $('#user-booking-calendar').show()
+  $('#user-booking-calendar').fullCalendar({
+      header: {
+          left: 'today',
+          center: 'prev title next',
+          right: 'month,agendaWeek',
+      },
+      minTime: "07:00:00",
+      maxTime: "21:00:00",
+      allDaySlot: false,
+      defaultView :'agendaWeek',
+      height: 600,
+      events:'/doctors/'+docId+'/availabilities/view.json',
+
+      eventClick: function(event) {
+        var startTime  = event.start._i
+        var endTime    = event.end._i
+        docName        = event.name
+        var eventId = event._id;
+        swal({ title: "Booking Confirmation",
+          text: "Booking an appointment with Dr." +docName+" on " + moment(startTime).format('ddd MMM DD YYYY HH:mm'),
+          // type: "info",
+          imageUrl: 'http://www.mariowiki.com/images/7/76/DrMarioOnlineRxMarioIcon.png',
+          showCancelButton: true,
+          closeOnConfirm: false,
+          showLoaderOnConfirm: true,
+        },
+        function(){
+          $.ajax({
+            method: "POST",
+            url: "/users/"+ userId + "/appointments",
+            data: {appointment: { user_id: userId, doctor_id: docId, start: startTime, end: endTime}, avail_id: eventId},
+            error: function(){
+              setTimeout(function(){
+               swal({
+                 title: "Error!",
+                 imageUrl: 'http://www.mariowiki.com/images/0/01/Goomba_Cut-in_PD-SMBE.png',
+               text: "A error has occured, please try again later!"}); }, 1000);
+            },
+            success: function(data){
+              setTimeout(function(){
+               swal("Confirmed!", '', 'success');}, 1000);
+            }
+          })
+        })
+    },
+  });
+
+
+})
 
 
   $('#calendar').on('click', '.fa-trash', function(){
-
-
     var docName = $('div.fc-title').html();
     var appId   = $(this).next().data('id');
-    console.log(appId);
     swal({
       imageUrl: 'http://vignette2.wikia.nocookie.net/nintendo/images/b/be/Boo_Icon.png/revision/latest/scale-to-width-down/240?cb=20120506182024&path-prefix=en',
      title: "Cancel apppointment?",
@@ -51,7 +223,8 @@ $(document).ready(function() {
            title: "Appointment Unchanged",
            text: "I will close in 2 seconds.",
            timer: 2000,
-           showConfirmButton: false });
+           showConfirmButton: false
+         });
        }
      });
   })
